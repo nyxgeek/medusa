@@ -65,6 +65,7 @@ typedef struct __sConnectParams
   int nRetries;
   int nRetryWait;  
   int nSourcePort;
+  char* nHostname;
 } sConnectParams;
 
 extern int medusaConnect(sConnectParams* pParams);

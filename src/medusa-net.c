@@ -93,13 +93,14 @@ void initConnectionParams(sLogin* pLogin, sConnectParams* pParams)
   pParams->nTimeout = pLogin->psServer->psHost->iTimeout;
   pParams->nRetryWait = pLogin->psServer->psHost->iRetryWait;
   pParams->nRetries = pLogin->psServer->psHost->iRetries;
+  pParams->nHostname = pLogin->psServer->psHost->pHost;
   if (pParams->nProtocol == 0)
     pParams->nProtocol = SOCK_STREAM;
   if (pParams->nType == 0)
     pParams->nType = 6;
 }
 
-int medusaConnectInternal(unsigned long nHost, int nPort, int nProtocol, int nType, int nWaitTime, int nRetries, int nRetryWait,unsigned long nProxyStringIP, int nProxyStringPort, char* szProxyAuthentication, int nSourcePort)
+int medusaConnectInternal(unsigned long nHost, int nPort, int nProtocol, int nType, int nWaitTime, int nRetries, int nRetryWait,unsigned long nProxyStringIP, int nProxyStringPort, char* szProxyAuthentication, int nSourcePort, const char* nHostname)
 {
   int s, ret = -1;
   int nFail = 0;
@@ -373,6 +374,9 @@ int medusaConnectSSLInternal(sConnectParams* pParams, int hSocket)
     return -1;
   }
 
+  // sets the TLS hostname
+  SSL_set_tlsext_host_name(ssl, pParams->nHostname);
+  
   SSL_set_fd(ssl, hSocket);
   if (SSL_connect(ssl) <= 0)
   {
@@ -597,7 +601,7 @@ int medusaSendInternal(int socket, unsigned char *buf, int size, int options)
 int medusaConnect(sConnectParams* pParams)
 {
   return medusaConnectInternal(pParams->nHost, pParams->nPort, pParams->nProtocol, pParams->nType, pParams->nTimeout, pParams->nRetries, pParams->nRetryWait,
-                               pParams->nProxyStringIP, pParams->nProxyStringPort, pParams->szProxyAuthentication, pParams->nSourcePort);
+                               pParams->nProxyStringIP, pParams->nProxyStringPort, pParams->szProxyAuthentication, pParams->nSourcePort, pParams->nHostname);
 }
 
 int medusaConnectSSL(sConnectParams* pParams)
@@ -878,3 +882,4 @@ int makeToLower(char *buf)
 
   return 1;
 }
+
